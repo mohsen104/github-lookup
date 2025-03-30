@@ -1,7 +1,11 @@
 import { IoGitBranchOutline } from "react-icons/io5";
 import { IUser } from "../types/user";
 import { MdGroups } from "react-icons/md";
-import { IoIosArrowRoundForward, IoIosStarOutline, IoLogoGithub } from "react-icons/io";
+import {
+  IoIosArrowRoundForward,
+  IoIosStarOutline,
+  IoLogoGithub,
+} from "react-icons/io";
 
 function User({ user }: { user: IUser | null }) {
   return (
@@ -41,7 +45,7 @@ function User({ user }: { user: IUser | null }) {
             key={repo.id}
           >
             <div className="font-bold flex items-center justify-between">
-              <p>{repo.name}</p>
+              <p className="text-primary">{repo.name}</p>
               <p className="flex items-center gap-1">
                 <IoIosStarOutline size={16} />
                 {repo.stargazers_count}
@@ -49,7 +53,7 @@ function User({ user }: { user: IUser | null }) {
             </div>
             <p className="text-sm text-gray-500">{repo.description}</p>
             <div className="font-bold flex items-center justify-between">
-              <p className="flex items-center gap-1">
+              <p className="flex items-center gap-1 text-sm">
                 <span
                   style={{ backgroundColor: repo.languageColor }}
                   className="size-4 rounded-full"

@@ -25,8 +25,6 @@ function SearchBar({ setData }: { setData: (data: IUser) => void }) {
     });
     const data = await response.json();
 
-    console.log(data?.message === "Not Found");
-
     if (data?.message === "Not Found") {
       setIsPending(false);
       notifyError();
