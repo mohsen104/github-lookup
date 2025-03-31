@@ -8,71 +8,72 @@ function SearchBar({ setData }: { setData: (data: IUser) => void }) {
   const [username, setUsername] = useState<string>("");
   const [isPending, setIsPending] = useState<boolean>(false);
 
-  const notifyWarning = () => toast.warn("Please enter a username.");
-  const notifyError = () => toast.error("User not found.");
+  const notifyWarning = (content: string) => toast.warn(content);
+  const notifyError = (content: string) => toast.error(content);
 
   const fetchUser = async (username: string) => {
     if (!username.trim()) {
-      notifyWarning();
+      notifyWarning("Please enter a username.");
       return;
     }
 
-    setUsername("");
-    setIsPending(true);
+    try {
+      setUsername("");
+      setIsPending(true);
 
-    const response = await fetch(`https://api.github.com/users/${username}`, {
-      cache: "force-cache",
-    });
-    const data = await response.json();
+      const userResponse = await fetch(
+        `https://api.github.com/users/${username}`
+      );
 
-    if (data?.message === "Not Found") {
+      if (!userResponse.ok && userResponse.status === 404) {
+        setIsPending(false);
+        notifyError("User not found.");
+        return;
+      }
+
+      const [reposResponse, colorsResponse] = await Promise.all([
+        fetch(`https://api.github.com/users/${username}/repos`),
+        fetch(
+          `https://raw.githubusercontent.com/ozh/github-colors/master/colors.json`
+        ),
+      ]);
+
+      const [userData, reposData, colorsData] = await Promise.all([
+        userResponse.json(),
+        reposResponse.json(),
+        colorsResponse.json(),
+      ]);
+
+      const user: IUser = {
+        login: userData.login,
+        name: userData.name,
+        bio: userData.bio,
+        avatar_url: userData.avatar_url,
+        html_url: userData.html_url,
+        public_repos: userData.public_repos,
+        languages: reposData.map((repo: IRepo) => repo.language),
+        followers: userData.followers,
+        repos: reposData
+          .map((repo: IRepo) => ({
+            id: repo.id,
+            name: repo.name,
+            description: repo.description,
+            stargazers_count: repo.stargazers_count,
+            language: repo.language || "Unknown",
+            languageColor: colorsData[repo.language]?.color || "#F5F5F5",
+            html_url: repo.html_url,
+          }))
+          .sort(
+            (a: IRepo, b: IRepo) => b.stargazers_count - a.stargazers_count
+          ),
+      };
+
+      setData(user);
       setIsPending(false);
-      notifyError();
-      return;
+    } catch (error) {
+      setIsPending(false);
+      notifyError("An error occurred while fetching user data.");
     }
-
-    const response2 = await fetch(
-      `https://api.github.com/users/${username}/repos`,
-      {
-        cache: "force-cache",
-      }
-    );
-
-    const reposData = await response2.json();
-
-    const response3 = await fetch(
-      `https://raw.githubusercontent.com/ozh/github-colors/master/colors.json`,
-      {
-        cache: "force-cache",
-      }
-    );
-
-    const colorsData = await response3.json();
-
-    const userData: IUser = {
-      login: data.login,
-      name: data.name,
-      bio: data.bio,
-      avatar_url: data.avatar_url,
-      html_url: data.html_url,
-      public_repos: data.public_repos,
-      followers: data.followers,
-      languages: reposData.map((repo: IRepo) => repo.language),
-      repos: reposData
-        .map((repo: IRepo) => ({
-          id: repo.id,
-          name: repo.name,
-          description: repo.description,
-          stargazers_count: repo.stargazers_count,
-          language: repo.language || "Unknown",
-          languageColor: colorsData[repo.language]?.color || "#F5F5F5",
-          html_url: repo.html_url,
-        }))
-        .sort((a: IRepo, b: IRepo) => b.stargazers_count - a.stargazers_count),
-    };
-
-    setData(userData);
-    setIsPending(false);
   };
 
   const handleSubmit = (e: FormEvent) => {

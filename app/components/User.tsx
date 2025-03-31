@@ -1,11 +1,8 @@
 import { IoGitBranchOutline } from "react-icons/io5";
 import { IUser } from "../types/user";
 import { MdGroups } from "react-icons/md";
-import {
-  IoIosArrowRoundForward,
-  IoIosStarOutline,
-  IoLogoGithub,
-} from "react-icons/io";
+import { IoLogoGithub } from "react-icons/io";
+import RepoItem from "./RepoItem";
 
 function User({ user }: { user: IUser | null }) {
   return (
@@ -40,31 +37,7 @@ function User({ user }: { user: IUser | null }) {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 my-8 container mx-auto">
         {user?.repos.map((repo) => (
-          <div
-            className="border-1 border-gray-100 rounded-2xl w-full p-4 flex flex-col justify-between gap-4 h-full"
-            key={repo.id}
-          >
-            <div className="font-bold flex items-center justify-between">
-              <p className="text-primary">{repo.name}</p>
-              <p className="flex items-center gap-1">
-                <IoIosStarOutline size={16} />
-                {repo.stargazers_count}
-              </p>
-            </div>
-            <p className="text-sm text-gray-500">{repo.description}</p>
-            <div className="font-bold flex items-center justify-between">
-              <p className="flex items-center gap-1 text-sm">
-                <span
-                  style={{ backgroundColor: repo.languageColor }}
-                  className="size-4 rounded-full"
-                ></span>
-                {repo.language}
-              </p>
-              <a href={repo.html_url} target="_blank" rel="noopener noreferrer">
-                <IoIosArrowRoundForward size={24} />
-              </a>
-            </div>
-          </div>
+          <RepoItem key={repo.id} repo={repo} />
         ))}
       </div>
     </div>
